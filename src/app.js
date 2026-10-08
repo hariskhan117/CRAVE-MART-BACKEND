@@ -1,6 +1,7 @@
-import express, { urlencoded } from "express";
+import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import userRoute from "./routes/user.route.js";
 
 export const app = express();
 app.use(
@@ -13,3 +14,5 @@ app.use(
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ limit: "16kb" }));
 app.use(cookieParser());
+
+app.use("/api/v1/auth", userRoute);
