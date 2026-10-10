@@ -27,6 +27,7 @@ export const registerUserService = async ({
 
   // Upload image to Cloudinary
   const profileImage = await uploadOnCloudinary(profileImageLocalPath);
+  console.log("IMAGE", profileImage);
 
   if (!profileImage?.url) {
     throw new ApiError(500, "Profile image upload failed");
