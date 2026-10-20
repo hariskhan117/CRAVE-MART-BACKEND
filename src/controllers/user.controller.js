@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/index.js";
+import { asyncHandler, generateAccessAndRefreshToken } from "../utils/index.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { registerUserService } from "../services/user.service.js";
 import { ApiError } from "../utils/ApiError.js";
@@ -34,6 +34,33 @@ const loginUser = asyncHandler(async (req, res) => {
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid password");
   }
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id,
+  );
+  const loggedInUser = await User.findById(user._id).select(
+    "-password",
+    "-refreshToken",
+  );
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          loggedInUser,
+          accessToken,
+          refreshToken,
+        },
+        "User Logged In Sucessfully",
+      ),
+    );
 });
 
 export { registerUser, loginUser };
