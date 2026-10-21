@@ -9,9 +9,13 @@ export const registerUserService = async ({
   profileImageLocalPath,
 }) => {
   // Check required fields
-  if ([fullName, email, password].some((field) => field?.trim() === "")) {
+  if (
+    [fullName, email, password].some((field) => !field || field?.trim() === "")
+  ) {
     throw new ApiError(400, "All fields are required");
   }
+
+  console.log("PASSWORD :-", password);
 
   // Check existing user
   const existedUser = await User.findOne({ email });

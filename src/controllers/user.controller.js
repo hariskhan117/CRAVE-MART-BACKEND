@@ -6,8 +6,10 @@ import { User } from "../models/user.model.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password } = req.body;
+  console.log(fullName, email, password);
 
   const profileImageLocalPath = req.file?.path;
+  console.log(profileImageLocalPath);
 
   const createdUser = await registerUserService({
     fullName,
@@ -23,10 +25,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  if (!email) {
-    throw new ApiError(400, "Email are required");
+
+  console.log("PASS :-", password);
+  console.log("EMAIL :-", email);
+
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
   }
-  const user = await User.findOne(email);
+  const user = await User.findOne({ email });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
@@ -38,9 +44,10 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id,
   );
   const loggedInUser = await User.findById(user._id).select(
-    "-password",
-    "-refreshToken",
+    "-password -refreshToken",
   );
+  console.log("LOGGIN USER :-", loggedInUser);
+
   const options = {
     httpOnly: true,
     secure: true,
@@ -63,4 +70,28 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser };
+const logoutUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user_id,
+    {
+      $set: {
+        refreshToken: undefined,
+      },
+    },
+    {
+      new: true,
+    },
+  );
+
+  const option = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(200)
+    .clearCookie("accessToken", option)
+    .clearCookie("refreshToken", option)
+    .json(new ApiResponse(200, {}, "User Logout SuccessFully"));
+});
+
+export { registerUser, loginUser, logoutUser };

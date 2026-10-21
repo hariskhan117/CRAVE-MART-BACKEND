@@ -1,20 +1,20 @@
-// const asyncHandler = (requestHandler) => async (req, res, next) => {
-//   try {
-//     await requestHandler(req, res, next);
-//   } catch (error) {
-//     res.status(error.code || 500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
+const asyncHandler = (requestHandler) => async (req, res, next) => {
+  try {
+    await requestHandler(req, res, next);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 import { User } from "../models/user.model.js";
 import { ApiError } from "./ApiError.js";
 
-const asyncHandler = (fn) => (req, res, next) => {
-  return Promise.resolve(fn(req, res, next)).catch((err) => {});
-};
+// const asyncHandler = (fn) => (req, res, next) => {
+//   return Promise.resolve(fn(req, res, next)).catch((err) => {});
+// };
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -22,7 +22,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
     user.refreshToken = refreshToken;
-    user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
     return {
       accessToken,
       refreshToken,
