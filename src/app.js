@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import userRoute from "./routes/user.route.js";
+import categoryRoute from "./routes/category.route.js";
+import productRoute from "./routes/product.route.js";
 
 export const app = express();
 app.use(
@@ -16,3 +18,5 @@ app.use(express.urlencoded({ limit: "16kb" }));
 app.use(cookieParser());
 
 app.use("/api/v1/auth", userRoute);
+app.use("/api/v1", categoryRoute);
+app.use("/api/v1", productRoute);

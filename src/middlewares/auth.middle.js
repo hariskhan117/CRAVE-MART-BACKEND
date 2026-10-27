@@ -3,8 +3,6 @@ import { asyncHandler } from "../utils/index.js";
 import { ApiError } from "../utils/ApiError.js";
 import jwt from "jsonwebtoken";
 
-console.log("RRRRRR", process.env.ACCESS_TOKEN_SECRET);
-
 export const jwtVerify = asyncHandler(async (req, res, next) => {
   const token =
     req.cookies?.accessToken ||
