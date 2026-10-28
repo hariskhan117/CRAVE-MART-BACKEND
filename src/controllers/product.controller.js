@@ -1,9 +1,9 @@
-import { Category } from "../models/category.model";
-import { Product } from "../models/product.model";
-import { asyncHandler } from "../utils";
-import { ApiError } from "../utils/ApiError";
-import { ApiResponse } from "../utils/ApiResponse";
-import { uploadOnCloudinary } from "../utils/cloudinary";
+import { Category } from "../models/category.model.js";
+import { Product } from "../models/product.model.js";
+import { asyncHandler } from "../utils/index.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const createProduct = asyncHandler(async (req, res) => {
   const {
@@ -62,10 +62,18 @@ const createProduct = asyncHandler(async (req, res) => {
 });
 
 const getAllProduct = asyncHandler(async (req, res) => {
-  const product = await Product.find();
+  const products = await Product.find();
   return res
     .status(200)
-    .json(new ApiResponse(200, null, "Product fetch successfully"));
+    .json(new ApiResponse(200, { products }, "Product fetch successfully"));
 });
 
-export { createProduct, getAllProduct };
+const deleteProduct = asyncHandler(async (req, res) => {
+  const { productId } = req.params;
+  const deletedProduct = Product.findByIdAndDelete(productId);
+  if (!deleteProduct) {
+    throw new ApiError(404, "Product not found");
+  }
+  res.status(200).json(200, { deleteProduct }, "Product deleted successfully");
+});
+export { createProduct, getAllProduct, deleteProduct };

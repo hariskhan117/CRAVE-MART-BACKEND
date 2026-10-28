@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { asyncHandler } from "../utils/index.js";
-import { Product } from "../models/product.model";
+import { Product } from "../models/product.model.js";
 
 const createCategory = asyncHandler(async (req, res) => {
   const { name, isActive } = req.body;
@@ -13,23 +13,24 @@ const createCategory = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Category  name is  required");
   }
 
-  const existedCategory = Category.findOne({ name: name.trim() });
+  const existedCategory = await Category.findOne({ name: name.trim() });
   if (existedCategory) {
     throw new ApiError(409, "Category already exist");
   }
   let image = "";
   if (categoryImageLocalPath) {
     const uploadImage = await uploadOnCloudinary(categoryImageLocalPath);
-    if (!uploadedImage) {
+    if (!uploadImage) {
       throw new ApiError(500, "Category image upload failed");
     }
-    image = uploadImage.url;
+    image = uploadImage.secure_url;
   }
 
   const category = await Category.create({
     name: name.trim(),
     image,
-    isActive: isActive === undefined ? true : isActive,
+    isActive:
+      isActive === undefined ? true : isActive === "true" || isActive === true,
   });
   const createdCategory = await Category.findById(category._id);
   if (!createdCategory) {
@@ -38,21 +39,34 @@ const createCategory = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(
-      new ApiResponse(201, { createCategory }, "Category created Successfully"),
+      new ApiResponse(
+        201,
+        { category: createdCategory },
+        "Category created Successfully",
+      ),
     );
 });
 
 const getAllCategory = asyncHandler(async (req, res) => {
-  const categories = await Category.find({ isActive: true });
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { categories }, "Category fetch successfully"));
+  const categories = await Category.find();
+  console.log("Categories :", categories.length);
+
+  const response = new ApiResponse(
+    200,
+    { categories },
+    "Category fetch successfully",
+  );
+
+  console.log("Response data:", response);
+
+  return res.status(200).json(response);
 });
 
 const deleteCategory = asyncHandler(async (req, res) => {
   const { categoryId } = req.params;
 
   const category = await Category.findById(categoryId);
+
   if (!category) {
     throw new ApiError(404, "Category not found");
   }
